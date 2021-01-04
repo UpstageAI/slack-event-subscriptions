@@ -1,0 +1,4 @@
+Flask
+Werkzeug
+boto3
+slackeventsapi
