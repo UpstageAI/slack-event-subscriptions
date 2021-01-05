@@ -34,13 +34,15 @@ def lambda_handler(event, context):
             time_diff = int(reaction_event_ts-post_event_ts) 
             
             dt = datetime.fromtimestamp(float(reaction_event_ts))
-        
+            dt_post = datetime.fromtimestamp(float(post_event_ts))
+
             #e.g., z20200103
             reaction_date = str(dt.date().strftime('z%Y%m%d'))
-            reaction_time = str(dt.strftime('%H:%M:%S'))
+            post_date = str(dt_post.date().strftime('z%Y%m%d'))
+            reaction_time = str(dt.strftime('%H:%M'))
             
-            #If reaction time is not later than 1hour
-            if time_diff <= 3600:
+            # Only if post and reaction are the same date
+            if reaction_date == post_date:
                 response = table.get_item(
                     Key={'user_id': user_id},
                     AttributesToGet=[reaction_date,]
