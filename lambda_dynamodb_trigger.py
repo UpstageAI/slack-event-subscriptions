@@ -1,16 +1,6 @@
 import json, os, boto3
 from botocore.vendored import requests
 from datetime import datetime
-#### Required permissions for lambda role
-# Dynamodb Read
-
-#### Required settings for lambda
-# Enviromnet variable for SLACK OAUTH TOKEN, REGION_NAME, TABLE_NAME
-# DynamoDB trigger with specific table
-
-#### Required settings for dynamoDB
-# Primary key: user_id
-
 
 #Located in Lambda Environment Variable
 TOKEN = os.environ['SLACK_OAUTH_TOKEN']
@@ -43,24 +33,28 @@ def lambda_handler(event, context):
             #Seconds
             time_diff = int(reaction_event_ts-post_event_ts) 
             
-            date = datetime.fromtimestamp(float(reaction_event_ts)).date()
-            
-            #e.g., D20200103
-            date = date.strftime('D%Y%m%d')
+            dt = datetime.fromtimestamp(float(reaction_event_ts))
+        
+            #e.g., z20200103
+            reaction_date = str(dt.date().strftime('z%Y%m%d'))
+            reaction_time = str(dt.strftime('%H:%M:%S'))
             
             #If reaction time is not later than 1hour
             if time_diff <= 3600:
-                response = table.get_item(Key={'user_id': user_id})
+                response = table.get_item(
+                    Key={'user_id': user_id},
+                    AttributesToGet=[reaction_date,]
+                    )
                 
                 #If the user exists, we add new attribute(date)
                 if 'Item' in response:
                     
                     #In order to avoid the multiple reaction from the same user
-                    if not str(date) in response['Item']:
+                    if not reaction_date in response['Item']:
                         table.update_item(
                             Key={ 'user_id': user_id },
-                            UpdateExpression='SET {} = :val'.format(date),
-                            ExpressionAttributeValues={ ':val': 1 }
+                            UpdateExpression='SET {} = :val'.format(reaction_date),
+                            ExpressionAttributeValues={ ':val': reaction_time }
                         )
                 # For the first time
                 else:
@@ -70,7 +64,7 @@ def lambda_handler(event, context):
                         item={
                             'user_id': user_id,
                             'username': username,
-                            str(date): 1
+                            reaction_date: reaction_time
                         }
                         table.put_item(Item=item)
 
