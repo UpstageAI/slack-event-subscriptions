@@ -12,6 +12,11 @@ app = Flask(__name__)
 def hello():
   return "Hello there!"
 
+# An example of one of your Flask app's routes
+@app.route("/csv")
+def csv():
+  return "Got CSV!"
+
 # Bind the Events API route to your existing Flask app by passing the server
 # instance as the last param, or with `server=app`.
 SLACK_SIGNING_SECRET = os.environ["SLACK_SIGNING_SECRET"]
