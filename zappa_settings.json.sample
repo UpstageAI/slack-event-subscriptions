@@ -1,0 +1,14 @@
+{
+    "dev": {
+        "app_function": "app.app",
+        "aws_region": "us-west-2",
+        "profile_name": "default",
+        "project_name": "slack",
+        "runtime": "python3.8",
+        "s3_bucket": "zappa-5tnh0t0ym",
+        "environment_variables": {
+            "SLACK_SIGNING_SECRET": "",
+            "SLACK_OAUTH_TOKEN": ""
+        }
+    }
+}
