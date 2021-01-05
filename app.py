@@ -2,7 +2,7 @@ from flask import Flask
 from slackeventsapi import SlackEventAdapter
 import os
 
-from db import put_event
+from db import put_event, put_attendance
 
 # This `app` represents your existing Flask app
 app = Flask(__name__)
@@ -31,6 +31,7 @@ def reaction_added(event_data):
   event = event_data['event']
   print(event)
   print(put_event(event))
+  put_attendance(event)
 
 
 # Start the server on port 3000
