@@ -1,7 +1,7 @@
 import json, os, boto3
 import requests
 #from botocore.vendored import requests
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 SLACK_OAUTH_TOKEN = os.environ['SLACK_OAUTH_TOKEN']
 SLACK_API_URL = 'https://slack.com/api/users.profile.get'
@@ -40,8 +40,10 @@ def put_attendance(event, dynamodb=None):
 
     event_ts = float(event['event_ts'])
     user_id = event['user']
-    
-    dt = datetime.fromtimestamp(float(event_ts))
+
+    ## Timezone: Asia/Seoul
+    tz = timezone(timedelta(hours=9))
+    dt = datetime.fromtimestamp(float(event_ts), tz)
 
     #e.g., z20200103
     reaction_date = str(dt.date().strftime('z%Y%m%d'))
