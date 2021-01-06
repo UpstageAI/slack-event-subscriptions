@@ -44,8 +44,7 @@ def lambda_handler(event, _):
     return {
         'statusCode': 200,
         'headers': {
-          'Content-Type': 'text/csv',
-          'Content-disposition': 'attachment; filename={}'.format(filename)
+          'Content-Type': 'text/plain; charset=utf-8',
         },
         'body': csv_format_content
     }
