@@ -27,7 +27,7 @@ def db2csv(query_date=None, sorting_key="username"):
 
     ## Sort by key
     if sorting_key in columns:
-        users = sorted(users, key=lambda k: k[sorting_key]) 
+        users = sorted(users, key=lambda k: k[sorting_key] if sorting_key in k else "X") 
 
     for user in users:
         row = []
