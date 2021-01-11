@@ -1,25 +1,34 @@
 from flask import Flask
+from flask import make_response
+from flask import request
+
 from slackeventsapi import SlackEventAdapter
 import os
 
+
 from db import put_event, put_attendance
+from db2csv import db2csv
 
 # This `app` represents your existing Flask app
 app = Flask(__name__)
 
-# An example of one of your Flask app's routes
 @app.route("/")
 def hello():
   return "Hello there!"
 
-# An example of one of your Flask app's routes
+# get csv
 @app.route("/csv")
 def csv():
-  return "Got CSV!"
-
+  query_date = request.args.get('d')
+  output = make_response(db2csv(query_date))
+  #output.headers["Content-Disposition"] = "attachment; filename=export.csv"
+  #output.headers["Content-type"] = "text/csv"
+  output.headers["Content-type"] = "text/plain; charset=utf-8"
+  return output
+  
 # Bind the Events API route to your existing Flask app by passing the server
 # instance as the last param, or with `server=app`.
-SLACK_SIGNING_SECRET = os.environ["SLACK_SIGNING_SECRET"]
+SLACK_SIGNING_SECRET = os.getenv("SLACK_SIGNING_SECRET")
 slack_events_adapter = SlackEventAdapter(SLACK_SIGNING_SECRET, "/slack/events", app)
 
 # Example responder to greetings

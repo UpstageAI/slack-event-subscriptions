@@ -1,9 +1,11 @@
 import json, os, boto3
 import requests
+import os
 #from botocore.vendored import requests
 from datetime import datetime, timedelta, timezone
 
-SLACK_OAUTH_TOKEN = os.environ['SLACK_OAUTH_TOKEN']
+SLACK_OAUTH_TOKEN = os.getenv ('SLACK_OAUTH_TOKEN')
+SLACK_CHECK_CHANNEL = os.getenv('SLACK_CHECK_CHANNEL')
 SLACK_API_URL = 'https://slack.com/api/users.profile.get'
 
 
@@ -32,11 +34,17 @@ def get_user_info(user):
     #FIXME: user not found error
     return json.loads(res.text)['profile']
 
-def put_attendance(event, dynamodb=None):
+def put_attendance(event, channel_id=SLACK_CHECK_CHANNEL, dynamodb=None):
     if not dynamodb:
         dynamodb = boto3.resource('dynamodb')
 
     table = dynamodb.Table('connect_up_slack_users')
+
+    if channel_id:
+        event_channel_id = event['item']['channel']
+        if channel_id != event_channel_id:
+            print(event_channel_id + " not found!")
+            return # do nothing
 
     event_ts = float(event['event_ts'])
     user_id = event['user']
@@ -81,4 +89,5 @@ if __name__ == '__main__':
     print(event1)
     print(get_event_key(event1))
     put_event(event1)
-    put_attendance(event1)
+    put_attendance(event1, channel_id='C01C9EAF4XX')
+    put_attendance(event1, channel_id='C01C9EAF4E9')
