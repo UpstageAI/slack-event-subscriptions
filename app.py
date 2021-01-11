@@ -20,7 +20,8 @@ def hello():
 @app.route("/csv")
 def csv():
   query_date = request.args.get('d')
-  output = make_response(db2csv(query_date))
+  sorting_key = request.args.get('s')
+  output = make_response(db2csv(query_date, sorting_key))
   #output.headers["Content-Disposition"] = "attachment; filename=export.csv"
   #output.headers["Content-type"] = "text/csv"
   output.headers["Content-type"] = "text/plain; charset=utf-8"
