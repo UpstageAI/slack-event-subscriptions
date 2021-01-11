@@ -5,10 +5,12 @@ import boto3
 REGION_NAME = os.getenv('REGION_NAME', "us-west-2")
 USER_TABLE_NAME = os.getenv('USER_TABLE_NAME', "connect_up_slack_user")
 
-def db2csv(query_date=None, sorting_key="username"):
+def db2csv(query_date=None, sorting_key=None):
     dynamodb = boto3.resource('dynamodb', region_name=REGION_NAME)
     table = dynamodb.Table(USER_TABLE_NAME)
     
+    sorting_key = sorting_key if sorting_key else "username"
+
     if query_date:
         response = table.scan(AttributesToGet=['user_id', 'username', "z"+date])
     else:
@@ -27,7 +29,7 @@ def db2csv(query_date=None, sorting_key="username"):
 
     ## Sort by key
     if sorting_key in columns:
-        users = sorted(users, key=lambda k: k[sorting_key] if sorting_key in k else "X") 
+        users = sorted(users, key=lambda k: k[sorting_key] if sorting_key in k else "X")
 
     for user in users:
         row = []
