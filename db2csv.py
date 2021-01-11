@@ -1,16 +1,16 @@
 import json, csv, os
 import boto3
 
+from user_info import get_slack_username
+
 #Located in Lambda Environment Variable
 REGION_NAME = os.getenv('REGION_NAME', "us-west-2")
 USER_TABLE_NAME = os.getenv('USER_TABLE_NAME', "connect_up_slack_user")
 
-def db2csv(query_date=None, sorting_key=None):
+def db2csv(query_date=None, sorting_key="username"):
     dynamodb = boto3.resource('dynamodb', region_name=REGION_NAME)
     table = dynamodb.Table(USER_TABLE_NAME)
     
-    sorting_key = sorting_key if sorting_key else "username"
-
     if query_date:
         response = table.scan(AttributesToGet=['user_id', 'username', "z"+date])
     else:
@@ -21,6 +21,8 @@ def db2csv(query_date=None, sorting_key=None):
 
     columns = set()
     for user in users:
+        # update username just in case user has changed their names
+        user['username'] = get_slack_username(user['user_id'])
         columns.update(user.keys())
 
     columns = sorted(list(columns))
