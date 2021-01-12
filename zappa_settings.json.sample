@@ -8,7 +8,11 @@
         "s3_bucket": "zappa-5tnh0t0ym",
         "environment_variables": {
             "SLACK_SIGNING_SECRET": "",
-            "SLACK_OAUTH_TOKEN": ""
+            "SLACK_OAUTH_TOKEN": "",
+            "SLACK_CHECK_CHANNEL":"",
+            "REGION_NAME": "",
+            "TABLE_NAME":"",
+            "KEY_WORD":""
         }
     }
 }

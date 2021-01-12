@@ -4,10 +4,73 @@ import os
 #from botocore.vendored import requests
 from datetime import datetime, timedelta, timezone
 
+
+
 SLACK_OAUTH_TOKEN = os.getenv ('SLACK_OAUTH_TOKEN')
 SLACK_CHECK_CHANNEL = os.getenv('SLACK_CHECK_CHANNEL')
+EVENT_TABLE = os.getenv('TABLE_NAME')
+USER_TABLE = EVENT_TABLE+'_users'
 SLACK_API_URL = 'https://slack.com/api/users.profile.get'
+KEY_WORD = os.getenv('KEY_WORD')
 
+#Create the dynamodb tables if they don't exist
+def init_db(dynamodb=None):
+    if not dynamodb:
+        dynamodb = boto3.resource('dynamodb')
+    try:
+        table = dynamodb.create_table(
+        TableName=EVENT_TABLE,
+        KeySchema=[
+            {
+                'AttributeName': 'key',
+                'KeyType': 'HASH' 
+            },
+            {
+                'AttributeName': 'event_ts',
+                'KeyType': 'RANGE' 
+            }
+        ],AttributeDefinitions=[
+            {
+                'AttributeName': 'key',
+                'AttributeType': 'S'
+            },
+            {
+                'AttributeName': 'event_ts',
+                'AttributeType': 'S'
+            },
+
+        ],
+         ProvisionedThroughput={
+            'ReadCapacityUnits': 10,
+            'WriteCapacityUnits': 10
+        }
+    )
+    except Exception as e:
+        # if the table already exists
+        print(e) 
+    try:    
+        table = dynamodb.create_table(
+        TableName=USER_TABLE,
+        KeySchema=[
+            {
+                'AttributeName': 'user_id',
+                'KeyType': 'HASH' 
+            }
+        ],AttributeDefinitions=[
+            {
+                'AttributeName': 'user_id',
+                'AttributeType': 'S'
+            },
+        ],
+         ProvisionedThroughput={
+            'ReadCapacityUnits': 10,
+            'WriteCapacityUnits': 10
+        }
+    )
+    except Exception as e:
+        # if the table already exists
+        print(e)
+    
 
 def get_event_key(event):
     item = event['item']
@@ -17,7 +80,8 @@ def put_event(event, dynamodb=None):
     if not dynamodb:
         dynamodb = boto3.resource('dynamodb')
 
-    table = dynamodb.Table('connect_up_slack')
+
+    table = dynamodb.Table(EVENT_TABLE)
     event['key'] = get_event_key(event)
     response = table.put_item(Item=event)
     return response
@@ -29,21 +93,26 @@ def get_user_info(user):
         'token':SLACK_OAUTH_TOKEN,
         'user':user
     }
-    data["user"]=user
+    data['user']=user
     res = requests.post(url=url,data=data)
-    #FIXME: user not found error
-    return json.loads(res.text)['profile']
+    result = json.loads(res.text)
+    
+    if result['ok']:
+        return result['profile']['display_name'] if result['profile']['display_name'] else result['profile']['real_name']
+    else:
+        raise Exception(result['error'])
 
 def put_attendance(event, channel_id=SLACK_CHECK_CHANNEL, dynamodb=None):
     if not dynamodb:
         dynamodb = boto3.resource('dynamodb')
+    
 
-    table = dynamodb.Table('connect_up_slack_users')
-
+    table = dynamodb.Table(USER_TABLE)
+    
     if channel_id:
         event_channel_id = event['item']['channel']
         if channel_id != event_channel_id:
-            print(event_channel_id + " not found!")
+            print(event_channel_id + ' not found!')
             return # do nothing
 
     event_ts = float(event['event_ts'])
@@ -73,9 +142,11 @@ def put_attendance(event, channel_id=SLACK_CHECK_CHANNEL, dynamodb=None):
             )
     # For the first time
     else:
-        username = get_user_info(user_id)['display_name']
-        # This condition should be changed
-        if "부캠" in username or True:
+        username = get_user_info(user_id)
+
+        filter_condition = KEY_WORD in username if KEY_WORD else True
+
+        if filter_condition:
             item={
                 'user_id': user_id,
                 'username': username,
@@ -85,9 +156,21 @@ def put_attendance(event, channel_id=SLACK_CHECK_CHANNEL, dynamodb=None):
 
 
 if __name__ == '__main__':
-    event1 = {'type': 'reaction_added', 'user': 'U017FMWG9CJ', 'item': {'type': 'message', 'channel': 'C01C9EAF4E9', 'ts': '1607731457.022800'}, 'reaction': '+1', 'item_user': 'U017FMWG9CJ', 'event_ts': '1609676655.093400'}
-    print(event1)
-    print(get_event_key(event1))
+    init_db()
+    event1 = {
+        "event_ts": "1610429825.000500",
+        "item": {
+            "channel": "G01K6DQ7TJ4",
+            "ts": "1610428341.000200",
+            "type": "message"
+        },
+        "item_user": "U01DQLUCR71",
+        "key": "G01K6DQ7TJ4:1610428341.000200:U01DQLUCR71:sunglasses",
+        "reaction": "sunglasses",
+        "type": "reaction_added",
+        "user": "U01DQLUCR72"
+    }
+    
     put_event(event1)
-    put_attendance(event1, channel_id='C01C9EAF4XX')
-    put_attendance(event1, channel_id='C01C9EAF4E9')
+    put_attendance(event1, channel_id='G01K6DQ7TJ4')
+    put_attendance(event1, channel_id='G01K6DQ7TJ4')
