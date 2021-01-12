@@ -4,6 +4,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
+Do you want to get simple attendance checks? If you are using Slack, participants can just react on a specific post, then we can check the attendance based on the reaction. It's so simple and fun.
 
 
 ### Built With
