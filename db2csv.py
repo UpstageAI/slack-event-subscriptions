@@ -4,13 +4,16 @@ import boto3
 from user_info import get_slack_username
 
 #Located in Lambda Environment Variable
-REGION_NAME = os.getenv('REGION_NAME', "us-west-2")
-USER_TABLE_NAME = os.getenv('USER_TABLE_NAME', "connect_up_slack_user")
+EVENT_TABLE = os.getenv('TABLE_NAME')
+USER_TABLE = EVENT_TABLE+'_users'
 
-def db2csv(query_date=None, sorting_key="username"):
-    dynamodb = boto3.resource('dynamodb', region_name=REGION_NAME)
-    table = dynamodb.Table(USER_TABLE_NAME)
-    
+
+def db2csv(query_date=None, sorting_key=None):
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table(USER_TABLE)
+
+    sorting_key = sorting_key if sorting_key else "username"
+
     if query_date:
         response = table.scan(AttributesToGet=['user_id', 'username', "z"+date])
     else:
