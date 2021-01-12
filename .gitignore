@@ -1,2 +1,3 @@
 zappa_settings.json
 venv
+.DS_Store
