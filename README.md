@@ -25,14 +25,14 @@ If you are not familiar with the libraries below, please read the documentation 
 * Python3 (below 3.9, Zappa doesn't support 3.9 yet)
 * [AWS credentials](https://aws.amazon.com/blogs/security/a-new-and-standardized-way-to-manage-credentials-in-the-aws-sdks/)
 * Slack App
-    1. Create the new app from [https://api.slack.com/apps](https://api.slack.com/apps).
+    1. Create the new app from [https://api.slack.com/apps](https://api.slack.com/apps).<br/>
     ![screenshot_01](images/screen_shot_01.png)
-    2. Copy the signing secret.
+    2. Copy the signing secret.<br/>
     ![screenshot_02](images/screen_shot_02.png)
-    3. Add an OAuth scope (`users.profile:read`) and install to work space.
-    ![screenshot_03](images/screen_shot_03.png)
-    ![screenshot_04](images/screen_shot_04.png)
-    4. Copy the OAuth Access Token.
+    3. Add an OAuth scope (`users.profile:read`) and install to work space.<br/>
+    ![screenshot_03](images/screen_shot_03.png)<br/>
+    ![screenshot_04](images/screen_shot_04.png)<br/>
+    4. Copy the OAuth Access Token.<br/>
     ![screenshot_05](images/screen_shot_05.png)
 ### Installation
 
@@ -91,24 +91,22 @@ If you are not familiar with the libraries below, please read the documentation 
     Deployment complete!: https://eycl36fqk9.execute-api.ap-northeast-2.amazonaws.com/dev
     ```
 7. Update the configurations for slack app.
-    1. Enable events by adding `<YOUR_ENDPOINT_URL>/slack/events`
+    1. Enable events by adding `<YOUR_ENDPOINT_URL>/slack/events`<br/>
     ![screenshot_06](images/screen_shot_06.png)
-    2. Add workspace event `reaction_added`
+    2. Add workspace event `reaction_added`<br/>
     ![screenshot_07](images/screen_shot_07.png)
 8. Save and reinstall your app.
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Once you finish the setting, post the sample message in your slack channel and add a reaction.
-
+Once you finish the setting, post the sample message in your slack channel and add a reaction.<br/>
 ![screenshot_08](images/screen_shot_08.png)
 
-Then, you can find two tables from your DynamoDB.
+Then, you can find two tables from your DynamoDB.<br/>
 ![screenshot_09](images/screen_shot_09.png)
- the shorter name one is the table for the event storing 
+ the shorter name one is the table for the event storing <br/>
  ![screenshot_10](images/screen_shot_10.png)
- And, the table with a suffix `_user` is an actual organized version by the date and the name of the users.
-
+ And, the table with a suffix `_user` is an actual organized version by the date and the name of the users.<br/>
 ![screenshot_11](images/screen_shot_11.png)
 
 You can also access the data via api
