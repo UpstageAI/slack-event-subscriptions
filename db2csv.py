@@ -1,6 +1,8 @@
 import json, csv, os
 import boto3
 
+from user_info import get_slack_username
+
 #Located in Lambda Environment Variable
 EVENT_TABLE = os.getenv('TABLE_NAME')
 USER_TABLE = EVENT_TABLE+'_users'
@@ -22,6 +24,8 @@ def db2csv(query_date=None, sorting_key=None):
 
     columns = set()
     for user in users:
+        # update username just in case user has changed their names
+        user['username'] = get_slack_username(user['user_id'])
         columns.update(user.keys())
 
     columns = sorted(list(columns))
