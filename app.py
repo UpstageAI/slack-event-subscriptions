@@ -6,7 +6,7 @@ from slackeventsapi import SlackEventAdapter
 import os
 
 
-from db import init_db, put_event, put_attendance
+from db import init_db, put_event, put_attendance, put_msg
 from db2csv import db2csv
 
 # This `app` represents your existing Flask app
@@ -38,9 +38,8 @@ slack_events_adapter = SlackEventAdapter(SLACK_SIGNING_SECRET, "/slack/events", 
 @slack_events_adapter.on("message")
 def handle_message(event_data):
     message = event_data["event"]
-    channel = message["channel"]
-    user = message["user"]
-    print(str(message) + " at " + channel + " by " + user)
+    # print(message)
+    # put_msg(message)
 
 # Create an event listener for "reaction_added" events and print the emoji name
 @slack_events_adapter.on("reaction_added")
@@ -49,7 +48,6 @@ def reaction_added(event_data):
   print(event)
   print(put_event(event))
   put_attendance(event)
-
 
 # Start the server on port 3000
 if __name__ == "__main__":
