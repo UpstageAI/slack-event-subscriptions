@@ -4,7 +4,7 @@ import boto3
 from user_info import get_slack_username
 
 #Located in Lambda Environment Variable
-EVENT_TABLE = os.getenv('TABLE_NAME')
+EVENT_TABLE = os.getenv('TABLE_NAME', 'slack_attendance_check_default')
 USER_TABLE = EVENT_TABLE+'_users'
 
 
@@ -24,8 +24,11 @@ def db2csv(query_date=None, sorting_key=None):
 
     columns = set()
     for user in users:
+        #FIXME is there alternative way?
         # update username just in case user has changed their names
-        user['username'] = get_slack_username(user['user_id'])
+        # We will listen the name changing event
+        # user['username'] = get_slack_username(user['user_id'])
+
         columns.update(user.keys())
 
     columns = sorted(list(columns))

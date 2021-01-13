@@ -4,3 +4,5 @@ boto3
 slackeventsapi
 requests
 zappa
+pytest
+pytest-env

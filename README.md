@@ -128,6 +128,12 @@ The csv api supports two query parameters `d` and `s`.
 
 - `s`: sorting key for the result (e.g., s='user_id`). Only ascending order supports yet.
 
+## How to Test
+You can update the temporary environment variable in `pytest.ini`
+```sh
+pytest test.py
+```
+
 
 ## Ohters
 - Updating the work
