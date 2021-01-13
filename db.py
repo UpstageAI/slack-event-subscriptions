@@ -13,64 +13,49 @@ USER_TABLE = EVENT_TABLE+'_users'
 SLACK_API_URL = 'https://slack.com/api/users.profile.get'
 KEY_WORD = os.getenv('KEY_WORD')
 
-#Create the dynamodb tables if they don't exist
-def init_db(dynamodb=None):
+def create_table(dynamodb=None, event_table_name=None, user_table_name=None):
     if not dynamodb:
         dynamodb = boto3.resource('dynamodb')
-    try:
-        table = dynamodb.create_table(
-        TableName=EVENT_TABLE,
-        KeySchema=[
-            {
-                'AttributeName': 'key',
-                'KeyType': 'HASH' 
-            },
-            {
-                'AttributeName': 'event_ts',
-                'KeyType': 'RANGE' 
-            }
-        ],AttributeDefinitions=[
-            {
-                'AttributeName': 'key',
-                'AttributeType': 'S'
-            },
-            {
-                'AttributeName': 'event_ts',
-                'AttributeType': 'S'
-            },
-
-        ],
-         ProvisionedThroughput={
-            'ReadCapacityUnits': 10,
-            'WriteCapacityUnits': 10
-        }
-    )
-    except Exception as e:
-        # if the table already exists
-        print(e) 
-    try:    
-        table = dynamodb.create_table(
-        TableName=USER_TABLE,
-        KeySchema=[
-            {
-                'AttributeName': 'user_id',
-                'KeyType': 'HASH' 
-            }
-        ],AttributeDefinitions=[
-            {
-                'AttributeName': 'user_id',
-                'AttributeType': 'S'
-            },
-        ],
-         ProvisionedThroughput={
-            'ReadCapacityUnits': 10,
-            'WriteCapacityUnits': 10
-        }
-    )
-    except Exception as e:
-        # if the table already exists
-        print(e)
     
+    event_table_name = event_table_name if event_table_name else EVENT_TABLE
+    user_table_name = user_table_name if user_table_name else USER_TABLE
+
+    try:
+        dynamodb.create_table(
+            TableName=EVENT_TABLE,
+            KeySchema=[
+                dict(AttributeName= 'key',KeyType='HASH'),
+                dict(AttributeName= 'event_ts',KeyType='RANGE'), 
+            ],
+            AttributeDefinitions=[
+                dict(AttributeName='key',AttributeType='S'),
+                dict(AttributeName='event_ts',AttributeType='S'),
+            ],
+            ProvisionedThroughput=dict(ReadCapacityUnits=10,WriteCapacityUnits=10)
+        )
+        dynamodb.create_table(
+            TableName=USER_TABLE,
+            KeySchema=[dict(AttributeName='user_id',KeyType='HASH')],
+            AttributeDefinitions=[dict(AttributeName='user_id',AttributeType='S')],
+            ProvisionedThroughput=dict(ReadCapacityUnits=10,WriteCapacityUnits=10)
+        )
+    except Exception as e:
+        print(e)
+
+
+def delete_table(dynamodb=None, event_table_name=None, user_table_name=None):
+    if not dynamodb:
+        dynamodb = boto3.resource('dynamodb')
+
+    event_table_name = event_table_name if event_table_name else EVENT_TABLE
+    user_table_name = user_table_name if user_table_name else USER_TABLE
+
+    try:
+        dynamodb.Table(event_table_name).delete()
+        dynamodb.Table(user_table_name).delete()
+    except Exception as e:
+        print(e)
+
 
 def get_event_key(event):
     item = event['item']
