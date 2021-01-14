@@ -8,33 +8,30 @@ from datetime import datetime, timedelta, timezone
 
 SLACK_OAUTH_TOKEN = os.getenv ('SLACK_OAUTH_TOKEN')
 SLACK_CHECK_CHANNEL = os.getenv('SLACK_CHECK_CHANNEL')
-EVENT_TABLE = os.getenv('TABLE_NAME', 'slack_attendance_check_default')
+EVENT_TABLE = os.getenv('TABLE_NAME', 'connect_up_slack')
 USER_TABLE = EVENT_TABLE+'_users'
+MSG_TABLE = EVENT_TABLE+'_msgs'
 SLACK_API_URL = 'https://slack.com/api/users.profile.get'
 KEY_WORD = os.getenv('KEY_WORD')
 
 def create_table(dynamodb=None):
     if not dynamodb:
         dynamodb = boto3.resource('dynamodb')
-    
+    with open('db_schema.json') as json_file:
+        schema = json.load(json_file)
     try:
+        
         event_table = dynamodb.create_table(
             TableName=EVENT_TABLE,
-            KeySchema=[
-                dict(AttributeName= 'key',KeyType='HASH'),
-                dict(AttributeName= 'event_ts',KeyType='RANGE'), 
-            ],
-            AttributeDefinitions=[
-                dict(AttributeName='key',AttributeType='S'),
-                dict(AttributeName='event_ts',AttributeType='S'),
-            ],
-            ProvisionedThroughput=dict(ReadCapacityUnits=10,WriteCapacityUnits=10)
+            KeySchema=schema['event_table']['KeySchema'],
+            AttributeDefinitions=schema['event_table']['AttributeDefinitions'],
+            ProvisionedThroughput=schema['event_table']['ProvisionedThroughput']
         )
         user_table = dynamodb.create_table(
             TableName=USER_TABLE,
-            KeySchema=[dict(AttributeName='user_id',KeyType='HASH')],
-            AttributeDefinitions=[dict(AttributeName='user_id',AttributeType='S')],
-            ProvisionedThroughput=dict(ReadCapacityUnits=10,WriteCapacityUnits=10)
+            KeySchema=schema['user_table']['KeySchema'],
+            AttributeDefinitions=schema['user_table']['AttributeDefinitions'],
+            ProvisionedThroughput=schema['user_table']['ProvisionedThroughput']
         )
         waiter = dynamodb.meta.client.get_waiter('table_exists')
         waiter.wait(TableName=EVENT_TABLE, WaiterConfig=dict(Delay=1, MaxAttempts=30))
@@ -73,13 +70,25 @@ def put_event(event, dynamodb=None):
     if not dynamodb:
         dynamodb = boto3.resource('dynamodb')
 
-
     table = dynamodb.Table(EVENT_TABLE)
     event['key'] = get_event_key(event)
     response = table.put_item(Item=event)
     print(response)
     return response
 
+def get_msg_key(event):
+    return event['channel'] + ':' + event['ts'] 
+
+def put_msg(event, dynamodb=None):
+    if not dynamodb:
+        dynamodb = boto3.resource('dynamodb')
+
+    table = dynamodb.Table(MSG_TABLE)
+    event['key'] = get_msg_key(event)
+    print(MSG_TABLE)
+    print(event)
+    response = table.put_item(Item=event)
+    return response
 
 def get_user_info(user):
     url = SLACK_API_URL
@@ -170,8 +179,21 @@ if __name__ == '__main__':
         "type": "reaction_added",
         "user": "U01DQLUCR72"
     }
+
+    msg1 = {
+        'client_msg_id': '5cec7200-d60b-470b-9759-fb34e3d954c3', 
+        'type': 'message', 
+        'text': 'posting test', 
+        'user': 'U01HYQ2D2VD', 
+        'ts': '1610488144.006300', 
+        'team': 'T01JJ7GJW8Z', 
+        'blocks': [{'type': 'rich_text', 'block_id': 'mfyap', 'elements': [{'type': 'rich_text_section', 'elements': [{'type': 'text', 'text': 'posting test'}]}]}], 
+        'channel': 'C01JBP6B4G4', 
+        'event_ts': '1610488144.006300', 
+        'channel_type': 'channel'} 
     
     put_event(event1)
+    put_msg(msg1)
     put_attendance(event1, channel_id='G01K6DQ7TJ4')
     put_attendance(event1, channel_id='G01K6DQ7TJ4')
     delete_table()
