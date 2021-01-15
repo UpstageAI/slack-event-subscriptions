@@ -1,5 +1,6 @@
 zappa_settings.json
 venv
 .DS_Store
-venv
-.DS_Store
+__pycache__
+.pytest_cache
+*/.DS_Store

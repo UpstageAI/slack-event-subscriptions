@@ -6,13 +6,13 @@ from slackeventsapi import SlackEventAdapter
 import os
 
 
-from db import init_db, put_event, put_attendance, put_msg, update_user_info
+from db import put_event, put_attendance, put_msg, update_user_info
 from db2csv import db2csv
 
 # This `app` represents your existing Flask app
 app = Flask(__name__)
 
-init_db()
+
 
 @app.route("/")
 def hello():

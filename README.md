@@ -37,21 +37,21 @@ If you are not familiar with the libraries below, please read the documentation 
     ![screenshot_05](images/screen_shot_05.png)
 ### Installation
 
-1. Create a Slack app [https://api.slack.com/apps](https://api.slack.com/apps)
-2. Clone the repo
+
+1. Clone the repo
    ```sh
    git clone https://github.com/UpstageAI/slack-event-subscriptions.git
    ```
-3. Install Python packages
+1. Install Python packages
    ```sh
    cd slack-event-subscriptions
    pip install -r requirements.txt
    ```
-4. Init Zappa
+1. Init Zappa
    ```sh
    zappa init
    ```
-5. Update the `zappa_settings.json` like the example below.
+1. Update the `zappa_settings.json` like the example below.
     - (REQUIRED) `aws_region`, `REGION_NAME` : AWS region for your services
     - (REQUIRED) `SLACK_SIGNING_SECRET` :  Siging secret of your slack app
     - (REQUIRED) `SLACK_OAUTH_TOKEN` :  Oauth token of your slack app
@@ -80,7 +80,7 @@ If you are not familiar with the libraries below, please read the documentation 
         }
     }
    ```
-6. Deploy the app and copy the endpoint from the output
+1. Deploy the app and copy the endpoint from the output
     ```sh
     zappa deploy dev
     ```
@@ -91,12 +91,16 @@ If you are not familiar with the libraries below, please read the documentation 
     Deploying API Gateway..
     Deployment complete!: https://eycl36fqk9.execute-api.ap-northeast-2.amazonaws.com/dev
     ```
-7. Update the configurations for slack app.
+1. Create the tables (for the first time)
+    ```sh
+    zappa invoke dev 'from db import create_table;create_table()' --raw
+    ```
+1. Update the configurations for slack app.
     1. Enable events by adding `<YOUR_ENDPOINT_URL>/slack/events`<br/>
     ![screenshot_06](images/screen_shot_06.png)
-    2. Add workspace event `reaction_added`<br/>
+    2. Add workspace event `reaction_added` and `user_change`<br/>
     ![screenshot_07](images/screen_shot_07.png)
-8. Save and reinstall your app.
+1. Save and reinstall your app.
 <!-- USAGE EXAMPLES -->
 ## Usage
 
@@ -124,8 +128,23 @@ The csv api supports two query parameters `d` and `s`.
 
 - `s`: sorting key for the result (e.g., s='user_id`). Only ascending order supports yet.
 
+## How to Test
+You can update the temporary environment variable in `pytest.ini`
+```sh
+pytest test.py
+```
 
 
+## Ohters
+- Updating the work
+    ```sh
+    zappa update dev
+    ```
+- Cleaning the work
+    ```sh
+    zappa invoke dev 'from db import delete_table;delete_table()' --raw
+    zappa undeploy dev 
+    ```
 
 
 
