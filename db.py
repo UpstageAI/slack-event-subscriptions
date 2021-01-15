@@ -106,11 +106,39 @@ def get_user_info(user):
         #raise Exception(result['error'])
         return 'test_user'
 
+def update_user_info(event, dynamodb=None):
+    user_id = event['user']['id']
+    new_username = event['user']['profile']['display_name']
+    if not dynamodb:
+        dynamodb = boto3.resource('dynamodb')
+    
+    table = dynamodb.Table(USER_TABLE)
+
+    response = table.get_item(
+        Key={'user_id': user_id},
+        AttributesToGet=['username']
+    )
+
+    if not response['Item']:
+        return None
+
+    if response['Item']['username'] == new_username:
+        print("No need to change user name.")
+        return None
+
+    print("User name" + response['Item']['username'] + " changed to " + new_username)
+
+    return table.update_item(
+        Key={ 'user_id': user_id },
+                UpdateExpression='SET username = :val',
+                ExpressionAttributeValues={ ':val': new_username }
+    )  
+      
+
 def put_attendance(event, channel_id=SLACK_CHECK_CHANNEL, dynamodb=None):
     if not dynamodb:
         dynamodb = boto3.resource('dynamodb')
     
-
     table = dynamodb.Table(USER_TABLE)
     
     if channel_id:
@@ -191,9 +219,50 @@ if __name__ == '__main__':
         'channel': 'C01JBP6B4G4', 
         'event_ts': '1610488144.006300', 
         'channel_type': 'channel'} 
+
+    user_change={
+        'type': 'user_change', 
+        'user': {
+            'id': 'U01HYQ2D2VD', 
+            'team_id': 'T01JJ7GJW8Z', 
+            'name': 'hunkim', 
+            'deleted': False, 
+            'color': '9b3b45', 
+            'real_name': 'Sung Kim', 
+            'tz': 'Asia/Seoul', 
+            'tz_label': 'Korea Standard Time', 
+            'tz_offset': 32400, 
+            'profile': {
+                'title': '', 
+                'phone': '', 
+                'skype': '', 
+                'real_name': 'Sung Kim', 
+                'real_name_normalized': 'Sung Kim', 
+                'display_name': '성킴_T7777', 
+                'display_name_normalized': '성킴_T7777', 
+                'fields': [], 
+                'status_text': '', 
+                'status_emoji': '', 
+                'status_expiration': 0, 
+                'avatar_hash': '2f5a2ebd137c', 
+                'image_original': 'https://avatars.slack-edge.com/2021-01-10/1649434143536_2f5a2ebd137c0a8c9257_original.png', 
+                'is_custom_image': True, 
+                'first_name': 'Sung', 
+                'last_name': 'Kim', 
+                'image_24': 'https://avatars.slack-edge.com/2021-01-10/1649434143536_2f5a2ebd137c0a8c9257_24.png', 
+                'image_32': 'https://avatars.slack-edge.com/2021-01-10/1649434143536_2f5a2ebd137c0a8c9257_32.png', 
+                'image_48': 'https://avatars.slack-edge.com/2021-01-10/1649434143536_2f5a2ebd137c0a8c9257_48.png', 
+                'image_72': 'https://avatars.slack-edge.com/2021-01-10/1649434143536_2f5a2ebd137c0a8c9257_72.png', 
+                'image_192': 'https://avatars.slack-edge.com/2021-01-10/1649434143536_2f5a2ebd137c0a8c9257_192.png', 
+                'image_512': 'https://avatars.slack-edge.com/2021-01-10/1649434143536_2f5a2ebd137c0a8c9257_512.png', 
+                'image_1024': 'https://avatars.slack-edge.com/2021-01-10/1649434143536_2f5a2ebd137c0a8c9257_1024.png', 
+                'status_text_canonical': '', 
+                'team': 'T01JJ7GJW8Z'}, 
+                'is_admin': True, 'is_owner': False, 'is_primary_owner': False, 'is_restricted': False, 'is_ultra_restricted': False, 'is_bot': False, 'is_app_user': False, 'updated': 1610679373, 'locale': 'en-US'}, 'cache_ts': 1610679373, 'event_ts': '1610679373.134600'}
     
     put_event(event1)
     put_msg(msg1)
+    print(update_user_info(user_change))
     put_attendance(event1, channel_id='G01K6DQ7TJ4')
     put_attendance(event1, channel_id='G01K6DQ7TJ4')
     delete_table()

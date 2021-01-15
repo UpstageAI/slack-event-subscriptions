@@ -98,7 +98,7 @@ If you are not familiar with the libraries below, please read the documentation 
 1. Update the configurations for slack app.
     1. Enable events by adding `<YOUR_ENDPOINT_URL>/slack/events`<br/>
     ![screenshot_06](images/screen_shot_06.png)
-    2. Add workspace event `reaction_added`<br/>
+    2. Add workspace event `reaction_added` and `user_change`<br/>
     ![screenshot_07](images/screen_shot_07.png)
 1. Save and reinstall your app.
 <!-- USAGE EXAMPLES -->

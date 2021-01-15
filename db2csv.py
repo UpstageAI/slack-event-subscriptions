@@ -24,11 +24,6 @@ def db2csv(query_date=None, sorting_key=None):
 
     columns = set()
     for user in users:
-        #FIXME is there alternative way?
-        # update username just in case user has changed their names
-        # We will listen the name changing event
-        # user['username'] = get_slack_username(user['user_id'])
-
         columns.update(user.keys())
 
     columns = sorted(list(columns))
