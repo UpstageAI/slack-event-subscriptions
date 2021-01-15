@@ -6,7 +6,7 @@ from slackeventsapi import SlackEventAdapter
 import os
 
 
-from db import init_db, put_event, put_attendance, put_msg
+from db import init_db, put_event, put_attendance, put_msg, update_user_info
 from db2csv import db2csv
 
 # This `app` represents your existing Flask app
@@ -48,6 +48,12 @@ def reaction_added(event_data):
   print(event)
   print(put_event(event))
   put_attendance(event)
+
+# Create an event listener for "user_change" events
+@slack_events_adapter.on("user_change")
+def user_change(event_data):
+  event = event_data['event']
+  update_user_info(event)
 
 # Start the server on port 3000
 if __name__ == "__main__":
