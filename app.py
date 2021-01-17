@@ -23,12 +23,13 @@ def hello():
 def csv():
   query_date = request.args.get('d')
   sorting_key = request.args.get('s')
-  output = make_response(db2csv(query_date, sorting_key))
+  reverse = request.args.get('r')
+  output = make_response(db2csv(query_date, sorting_key, reverse))
   #output.headers["Content-Disposition"] = "attachment; filename=export.csv"
   #output.headers["Content-type"] = "text/csv"
   output.headers["Content-type"] = "text/plain; charset=utf-8"
   return output
-  
+
 # Bind the Events API route to your existing Flask app by passing the server
 # instance as the last param, or with `server=app`.
 SLACK_SIGNING_SECRET = os.getenv("SLACK_SIGNING_SECRET")
