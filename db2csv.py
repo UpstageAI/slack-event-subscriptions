@@ -33,10 +33,7 @@ def db2csv(query_date=None, sorting_key=None, reverse=None):
 
     ## Sort by key
     if sorting_key in columns:
-        if reverse:
-            users = sorted(users, key=lambda k: k[sorting_key] if sorting_key in k else "X")
-        else:
-            users = sorted(users, key=lambda k: k[sorting_key] if sorting_key in k else "X", reverse = True)
+        users = sorted(users, key=lambda k: k[sorting_key] if sorting_key in k else "X", reverse = reverse)
 
     for user in users:
         row = []
