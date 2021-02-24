@@ -8,11 +8,12 @@ EVENT_TABLE = os.getenv('TABLE_NAME', 'slack_attendance_check_default')
 USER_TABLE = EVENT_TABLE+'_users'
 
 
-def db2csv(query_date=None, sorting_key=None):
+def db2csv(query_date=None, sorting_key=None, reverse=None):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(USER_TABLE)
 
     sorting_key = sorting_key if sorting_key else "username"
+    reverse = reverse if reverse else False
 
     if query_date:
         response = table.scan(AttributesToGet=['user_id', 'username', "z"+date])
@@ -32,17 +33,17 @@ def db2csv(query_date=None, sorting_key=None):
 
     ## Sort by key
     if sorting_key in columns:
-        users = sorted(users, key=lambda k: k[sorting_key] if sorting_key in k else "X")
+        users = sorted(users, key=lambda k: k[sorting_key] if sorting_key in k else "X", reverse = reverse)
 
     for user in users:
         row = []
         for column in columns:
             row.append(user.get(column, "X"))
         csv_format_content+=",".join(row) +"\n"
-        
-    
+
+
     return csv_format_content
-    
+
 
 if __name__ == '__main__':
     print(db2csv())
